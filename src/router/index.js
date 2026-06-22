@@ -45,10 +45,22 @@ const frontendRoutes = [
     meta: { title: '排行榜' }
   },
   {
+    path: '/topics',
+    name: 'Topics',
+    component: () => import('@/views/frontend/Topics.vue'),
+    meta: { title: '话题广场' }
+  },
+  {
     path: '/about',
     name: 'About',
     component: () => import('@/views/frontend/About.vue'),
     meta: { title: '关于我们' }
+  },
+  {
+    path: '/user/:id/follows',
+    name: 'Follows',
+    component: () => import('@/views/frontend/Follows.vue'),
+    meta: { title: '关注与粉丝' }
   }
 ]
 
@@ -95,6 +107,12 @@ const backendRoutes = [
     name: 'Settings',
     component: () => import('@/views/backend/Settings.vue'),
     meta: { title: '个人设置', requiresAuth: true }
+  },
+  {
+    path: '/collections',
+    name: 'MyCollections',
+    component: () => import('@/views/backend/MyCollections.vue'),
+    meta: { title: '我的收藏', requiresAuth: true }
   }
 ]
 

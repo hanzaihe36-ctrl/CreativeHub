@@ -133,11 +133,19 @@
         />
       </section>
 
-      <!-- 相关推荐 -->
-      <section class="related-section" v-if="relatedWorks.length">
+      <!-- 同作者其他作品 -->
+      <section class="related-section" v-if="authorWorks.length">
+        <h2 class="section-title">TA 的其他作品</h2>
+        <div class="waterfall-grid">
+          <WorkCard v-for="w in authorWorks" :key="w.id" :work="w" />
+        </div>
+      </section>
+
+      <!-- 同分类推荐 -->
+      <section class="related-section" v-if="categoryWorks.length">
         <h2 class="section-title">相关推荐</h2>
         <div class="waterfall-grid">
-          <WorkCard v-for="w in relatedWorks" :key="w.id" :work="w" />
+          <WorkCard v-for="w in categoryWorks" :key="w.id" :work="w" />
         </div>
       </section>
 
@@ -181,7 +189,8 @@ const commentTotal = ref(0)
 const commentPage = ref(1)
 const commentHasMore = ref(false)
 const commentLoading = ref(false)
-const relatedWorks = ref([])
+const authorWorks = ref([])
+const categoryWorks = ref([])
 
 const isSelf = computed(() => userStore.currentUserId === work.value?.authorId)
 
@@ -199,9 +208,20 @@ async function fetchDetail() {
   }
   loading.value = false
 
-  // 相关推荐
-  relatedWorks.value = workStore.publishedWorks
-    .filter(w => w.id !== id && w.categoryId === work.value.categoryId)
+  // 加载作品列表（如果 store 里还没有）
+  if (!workStore.publishedWorks.length) {
+    await workStore.fetchWorks({ page: 1, pageSize: 50 })
+  }
+
+  // 同作者其他作品
+  authorWorks.value = workStore.publishedWorks
+    .filter(w => w.id !== id && w.authorId === work.value.authorId)
+    .slice(0, 6)
+
+  // 同分类推荐（排除当前作品，不重复同作者已有）
+  const authorIds = authorWorks.value.map(w => w.id)
+  categoryWorks.value = workStore.publishedWorks
+    .filter(w => w.id !== id && w.categoryId === work.value.categoryId && !authorIds.includes(w.id))
     .slice(0, 6)
 
   // 评论

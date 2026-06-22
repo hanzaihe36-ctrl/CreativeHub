@@ -182,6 +182,36 @@ creativehub/
 
 ---
 
+## 项目截图
+
+> 截图请放入 `screenshots/` 文件夹，按编号命名替换下方占位即可。
+
+### 前台页面
+
+| 截图 | 说明 |
+|------|------|
+| ![首页](screenshots/01-home.jpg) | **首页** — 分类入口 + 作品瀑布流 |
+| ![作品详情](screenshots/02-detail.jpg) | **作品详情** — 图片轮播 + 互动区 |
+| ![分类浏览](screenshots/03-category.jpg) | **分类浏览** — 按分类筛选作品 |
+| ![搜索](screenshots/04-search.jpg) | **搜索** — 作品/用户 Tab 切换 |
+| ![用户主页](screenshots/05-profile.jpg) | **用户主页** — 信息卡片 + 作品集 |
+| ![排行榜](screenshots/06-ranking.jpg) | **排行榜** — 热门作品 / 人气创作者 |
+| ![话题广场](screenshots/07-topics.jpg) | **话题广场** — 标签聚合卡片 |
+| ![关注与粉丝](screenshots/08-follows.jpg) | **关注与粉丝** — 关注列表 |
+
+### 创作者中心
+
+| 截图 | 说明 |
+|------|------|
+| ![仪表盘](screenshots/09-dashboard.jpg) | **仪表盘** — 数据统计 + 图表 + 最新评论 |
+| ![上传作品](screenshots/10-upload.jpg) | **上传作品** — 表单 + 图片/视频切换 |
+| ![作品管理](screenshots/11-manage.jpg) | **作品管理** — 表格 + 搜索筛选 |
+| ![我的收藏](screenshots/12-collections.jpg) | **我的收藏** — 收藏作品列表 |
+
+> 📸 共需 **12 张**截图，按上表命名放入 `screenshots/` 文件夹后提交即自动显示。
+
+---
+
 ## 项目文档
 
 项目根目录 `docs/` 下有完整标准文档：

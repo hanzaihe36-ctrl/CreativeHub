@@ -24,7 +24,8 @@
       <el-table :data="works" stripe v-loading="loading" style="width: 100%">
         <el-table-column label="封面" width="80">
           <template #default="{ row }">
-            <img :src="row.coverImage" class="table-cover" />
+            <video v-if="isVideoCover(row.coverImage)" :src="row.coverImage" muted preload="metadata" class="table-cover"></video>
+            <img v-else :src="row.coverImage" class="table-cover" />
           </template>
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
@@ -72,6 +73,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import AdminLayout from '@/components/AdminLayout.vue'
 
 const router = useRouter()
+
+function isVideoCover(url) {
+  return /\.(mp4|webm|mov)($|\?)/i.test(url || '')
+}
 const workStore = useWorkStore()
 const userStore = useUserStore()
 const categoryStore = useCategoryStore()
@@ -133,6 +138,6 @@ onMounted(async () => {
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { font-size: 22px; font-weight: 700; }
 .toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.table-cover { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; }
+.table-cover { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; display: block; }
 .pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
 </style>

@@ -10,6 +10,7 @@
       <!-- 导航菜单（桌面端） -->
       <nav class="nav-menu">
         <router-link to="/" class="nav-item" active-class="active" exact>首页</router-link>
+        <router-link to="/topics" class="nav-item" active-class="active">话题广场</router-link>
         <router-link to="/ranking" class="nav-item" active-class="active">排行榜</router-link>
         <router-link to="/about" class="nav-item" active-class="active">关于</router-link>
       </nav>
@@ -52,6 +53,9 @@
                 <el-dropdown-item command="upload">
                   <el-icon><Upload /></el-icon> 上传作品
                 </el-dropdown-item>
+                <el-dropdown-item command="collections">
+                  <el-icon><StarFilled /></el-icon> 我的收藏
+                </el-dropdown-item>
                 <el-dropdown-item divided command="logout">
                   <el-icon><SwitchButton /></el-icon> 退出登录
                 </el-dropdown-item>
@@ -69,6 +73,7 @@
     <transition name="slide-down">
       <div v-if="mobileMenuOpen" class="mobile-menu" @click="mobileMenuOpen = false">
         <router-link to="/" class="mobile-nav-item" exact>首页</router-link>
+        <router-link to="/topics" class="mobile-nav-item">话题广场</router-link>
         <router-link to="/ranking" class="mobile-nav-item">排行榜</router-link>
         <router-link to="/about" class="mobile-nav-item">关于</router-link>
         <div class="mobile-divider"></div>
@@ -114,6 +119,9 @@ function handleCommand(cmd) {
       break
     case 'upload':
       router.push('/upload')
+      break
+    case 'collections':
+      router.push('/collections')
       break
     case 'logout':
       handleLogout()

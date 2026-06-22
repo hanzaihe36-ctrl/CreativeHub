@@ -16,9 +16,44 @@
         </el-col>
       </el-row>
 
-      <!-- 快捷操作 -->
+      <!-- 图表区 -->
+      <el-row :gutter="20" class="chart-row">
+        <el-col :span="14">
+          <div class="panel">
+            <h2>浏览趋势（近7天）</h2>
+            <div ref="lineChartRef" class="chart-box"></div>
+          </div>
+        </el-col>
+        <el-col :span="10">
+          <div class="panel">
+            <h2>分类分布</h2>
+            <div ref="pieChartRef" class="chart-box"></div>
+          </div>
+        </el-col>
+      </el-row>
+
+      <!-- 最新评论 + 快捷操作 -->
       <el-row :gutter="20" class="action-row">
-        <el-col :span="12">
+        <el-col :span="14">
+          <div class="panel">
+            <h2>最新评论</h2>
+            <div class="comment-list" v-if="stats?.recentComments?.length">
+              <div class="comment-item" v-for="c in stats.recentComments" :key="c.id">
+                <el-avatar :size="28" :src="c.userAvatar" />
+                <div class="comment-body">
+                  <div class="comment-header">
+                    <strong>{{ c.userName }}</strong>
+                    <span class="comment-work">评论了 <router-link :to="`/work/${c.workId}`">{{ c.workTitle }}</router-link></span>
+                  </div>
+                  <p class="comment-text">{{ c.content }}</p>
+                </div>
+                <span class="comment-time">{{ timeAgo(c.createTime) }}</span>
+              </div>
+            </div>
+            <el-empty v-else description="暂无评论" :image-size="40" />
+          </div>
+        </el-col>
+        <el-col :span="10">
           <div class="panel">
             <h2>快捷操作</h2>
             <div class="quick-actions">
@@ -28,19 +63,10 @@
               <el-button @click="$router.push('/drafts')">
                 <el-icon><Document /></el-icon> 查看草稿箱
               </el-button>
+              <el-button @click="$router.push('/manage/works')">
+                <el-icon><Grid /></el-icon> 作品管理
+              </el-button>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="12">
-          <div class="panel">
-            <h2>最新动态</h2>
-            <div class="activity-list" v-if="stats">
-              <p>作品总数：<strong>{{ stats.worksCount }}</strong></p>
-              <p>草稿数量：<strong>{{ stats.draftCount }}</strong></p>
-              <p>总浏览量：<strong>{{ formatCount(stats.totalViews) }}</strong></p>
-              <p>总获赞：<strong>{{ formatCount(stats.totalLikes) }}</strong></p>
-            </div>
-            <el-empty v-else description="暂无数据" :image-size="60" />
           </div>
         </el-col>
       </el-row>
@@ -49,13 +75,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useUserStore } from '@/stores'
-import { formatCount } from '@/utils/date'
+import { formatCount, timeAgo } from '@/utils/date'
+import * as echarts from 'echarts'
 import AdminLayout from '@/components/AdminLayout.vue'
 
 const userStore = useUserStore()
 const stats = ref(null)
+const lineChartRef = ref(null)
+const pieChartRef = ref(null)
 
 const statCards = ref([
   { icon: 'Picture', label: '作品总数', value: 0, color: '#3498DB' },
@@ -63,6 +92,65 @@ const statCards = ref([
   { icon: 'StarFilled', label: '总获赞', value: 0, color: '#E74C3C' },
   { icon: 'UserFilled', label: '粉丝数', value: 0, color: '#F39C12' }
 ])
+
+async function initCharts() {
+  if (!stats.value || !lineChartRef.value || !pieChartRef.value) return
+
+  // 折线图 - 浏览趋势
+  const lineChart = echarts.init(lineChartRef.value)
+  lineChart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 40, right: 20, top: 20, bottom: 30 },
+    xAxis: {
+      type: 'category',
+      data: stats.value.dailyViews.map(d => d.date.slice(5)),
+      axisLine: { lineStyle: { color: '#ccc' } }
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#f0f0f0' } }
+    },
+    series: [{
+      data: stats.value.dailyViews.map(d => d.views),
+      type: 'line',
+      smooth: true,
+      areaStyle: {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: 'rgba(52,152,219,0.3)' },
+          { offset: 1, color: 'rgba(52,152,219,0)' }
+        ])
+      },
+      lineStyle: { color: '#3498DB', width: 2 },
+      itemStyle: { color: '#3498DB' }
+    }]
+  })
+
+  // 饼图 - 分类分布
+  const pieChart = echarts.init(pieChartRef.value)
+  const dist = stats.value.categoryDist || []
+  if (dist.length) {
+    pieChart.setOption({
+      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+      series: [{
+        type: 'pie',
+        radius: ['45%', '75%'],
+        center: ['50%', '55%'],
+        data: dist,
+        label: { formatter: '{b}\n{d}%', fontSize: 11 },
+        emphasis: {
+          itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.2)' }
+        }
+      }]
+    })
+  } else {
+    pieChart.setOption({
+      title: { text: '暂无数据', left: 'center', top: 'center', textStyle: { color: '#ccc', fontSize: 14 } }
+    })
+  }
+
+  // 响应式
+  window.addEventListener('resize', () => { lineChart.resize(); pieChart.resize() })
+}
 
 onMounted(async () => {
   const s = await userStore.fetchStats()
@@ -72,6 +160,8 @@ onMounted(async () => {
     statCards.value[1].value = formatCount(s.totalViews)
     statCards.value[2].value = formatCount(s.totalLikes)
     statCards.value[3].value = userStore.currentUser?.followersCount || 0
+    await nextTick()
+    initCharts()
   }
 })
 </script>
@@ -89,8 +179,25 @@ onMounted(async () => {
 .stat-value { font-size: 24px; font-weight: 700; display: block; }
 .stat-label { font-size: var(--font-size-sm); color: var(--color-text-light); }
 
+.chart-row { margin-bottom: 20px; }
+.chart-box { width: 100%; height: 280px; }
 .panel { padding: 20px; background: #fff; border-radius: 8px; box-shadow: var(--shadow-sm); }
-.panel h2 { font-size: var(--font-size-md); font-weight: 600; margin-bottom: 16px; }
+.panel h2 { font-size: var(--font-size-md); font-weight: 600; margin-bottom: 12px; }
+
+.action-row { margin-top: 0; }
 .quick-actions { display: flex; flex-direction: column; gap: 10px; }
-.activity-list p { padding: 6px 0; font-size: var(--font-size-base); color: var(--color-text); }
+
+.comment-list { display: flex; flex-direction: column; }
+.comment-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--color-bg);
+}
+.comment-item:last-child { border-bottom: none; }
+.comment-body { flex: 1; min-width: 0; }
+.comment-header { font-size: var(--font-size-sm); }
+.comment-header strong { color: var(--color-text); }
+.comment-work { color: var(--color-text-light); margin-left: 4px; }
+.comment-work a { color: var(--color-secondary); }
+.comment-text { font-size: var(--font-size-sm); color: var(--color-text-light); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.comment-time { font-size: 11px; color: var(--color-text-light); white-space: nowrap; }
 </style>

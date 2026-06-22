@@ -37,8 +37,9 @@
               </el-form-item>
             </div>
 
-            <div class="form-section">
-              <h2>作品图片（1-9张）</h2>
+            <!-- 媒体上传 -->
+            <div class="form-section" v-if="form.mediaType === 'image'">
+              <h2>作品图片（1-12张）</h2>
               <div class="image-upload-area">
                 <div v-for="(img, i) in form.images" :key="i" class="image-preview">
                   <img :src="img" />
@@ -46,12 +47,21 @@
                     <el-icon><Close /></el-icon>
                   </el-button>
                 </div>
-                <div v-if="form.images.length < 9" class="upload-btn" @click="triggerUpload">
+                <div v-if="form.images.length < 12" class="upload-btn" @click="triggerUpload">
                   <el-icon :size="32"><Plus /></el-icon>
                   <span>添加图片</span>
                   <input ref="fileInput" type="file" accept="image/*" multiple hidden @change="handleFileChange" />
                 </div>
               </div>
+            </div>
+
+            <div class="form-section" v-else>
+              <h2>视频文件</h2>
+              <div v-if="form.videoUrl" class="video-preview">
+                <video :src="form.videoUrl" controls class="preview-video"></video>
+              </div>
+              <input ref="videoInput" type="file" accept="video/*" @change="handleVideoChange" class="video-input" />
+              <p class="form-hint">选择新视频文件替换当前视频</p>
             </div>
           </el-col>
         </el-row>
@@ -79,6 +89,7 @@ const categoryStore = useCategoryStore()
 
 const formRef = ref(null)
 const fileInput = ref(null)
+const videoInput = ref(null)
 const loading = ref(true)
 const saving = ref(false)
 const loaded = ref(false)
@@ -89,7 +100,9 @@ const form = reactive({
   categoryId: null,
   tags: [],
   toolsUsed: [],
-  images: []
+  mediaType: 'image',
+  images: [],
+  videoUrl: ''
 })
 
 const rules = {
@@ -119,15 +132,29 @@ function handleFileChange(e) {
 }
 function removeImage(i) { form.images.splice(i, 1) }
 
+function handleVideoChange(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  if (file.size > 100 * 1024 * 1024) { ElMessage.warning('视频不能超过100MB'); return }
+  const reader = new FileReader()
+  reader.onload = () => { form.videoUrl = reader.result }
+  reader.readAsDataURL(file)
+}
+
 async function save() {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
+  if (form.mediaType === 'image' && form.images.length === 0) { ElMessage.warning('请至少上传一张图片'); return }
   saving.value = true
   try {
-    await workStore.updateWork(Number(route.params.id), {
-      ...form,
-      coverImage: form.images[0]
-    })
+    const data = { ...form }
+    if (form.mediaType === 'video') {
+      data.coverImage = form.videoUrl
+      data.images = [form.videoUrl]
+    } else {
+      data.coverImage = form.images[0]
+    }
+    await workStore.updateWork(Number(route.params.id), data)
     ElMessage.success('作品已更新')
     router.push('/manage/works')
   } catch { ElMessage.error('更新失败') }
@@ -146,7 +173,9 @@ onMounted(async () => {
       categoryId: work.categoryId,
       tags: work.tags,
       toolsUsed: work.toolsUsed,
-      images: work.images
+      mediaType: work.mediaType || 'image',
+      images: work.images || [],
+      videoUrl: work.videoUrl || ''
     })
     loaded.value = true
   }
@@ -166,4 +195,8 @@ onMounted(async () => {
 .upload-btn:hover { border-color: var(--color-secondary); color: var(--color-secondary); }
 .upload-btn span { font-size: 12px; margin-top: 2px; }
 .form-actions { display: flex; gap: 12px; padding-top: 8px; }
+.video-preview { margin-bottom: 12px; }
+.preview-video { width: 100%; max-height: 300px; border-radius: 8px; }
+.video-input { margin-top: 8px; }
+.form-hint { font-size: 12px; color: var(--color-text-light); margin-top: 6px; }
 </style>

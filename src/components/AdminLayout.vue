@@ -31,6 +31,10 @@
           <el-icon><Document /></el-icon>
           <span>草稿箱</span>
         </el-menu-item>
+        <el-menu-item index="/collections">
+          <el-icon><StarFilled /></el-icon>
+          <span>我的收藏</span>
+        </el-menu-item>
         <el-menu-item index="/settings">
           <el-icon><Setting /></el-icon>
           <span>个人设置</span>

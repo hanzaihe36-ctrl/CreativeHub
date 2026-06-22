@@ -40,14 +40,14 @@
             <span class="stat-value">{{ formatCount(profile.likesCount) }}</span>
             <span class="stat-label">获赞</span>
           </div>
-          <div class="stat-item">
+          <router-link :to="`/user/${profile.id}/follows?tab=followers`" class="stat-item stat-link">
             <span class="stat-value">{{ profile.followersCount || 0 }}</span>
             <span class="stat-label">粉丝</span>
-          </div>
-          <div class="stat-item">
+          </router-link>
+          <router-link :to="`/user/${profile.id}/follows?tab=following`" class="stat-item stat-link">
             <span class="stat-value">{{ profile.followingCount || 0 }}</span>
             <span class="stat-label">关注</span>
-          </div>
+          </router-link>
         </div>
       </section>
 
@@ -140,6 +140,8 @@ onMounted(fetchProfile)
 /* 统计 */
 .profile-stats { display: flex; gap: var(--spacing-xl); margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--color-bg); }
 .stat-item { text-align: center; flex: 1; }
+.stat-link { cursor: pointer; transition: color var(--transition-fast); }
+.stat-link:hover .stat-value { color: var(--color-secondary); }
 .stat-value { display: block; font-size: 20px; font-weight: 700; color: var(--color-text); }
 .stat-label { font-size: var(--font-size-sm); color: var(--color-text-light); }
 

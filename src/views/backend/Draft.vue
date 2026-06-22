@@ -6,7 +6,8 @@
       <el-table :data="drafts" stripe v-loading="loading" empty-text="暂无草稿">
         <el-table-column label="封面" width="80">
           <template #default="{ row }">
-            <img :src="row.coverImage" class="table-cover" v-if="row.coverImage" />
+            <video v-if="row.coverImage && isVideoCover(row.coverImage)" :src="row.coverImage" muted preload="metadata" class="table-cover"></video>
+            <img v-else-if="row.coverImage" :src="row.coverImage" class="table-cover" />
           </template>
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
@@ -37,6 +38,10 @@ import AdminLayout from '@/components/AdminLayout.vue'
 const router = useRouter()
 const workStore = useWorkStore()
 const userStore = useUserStore()
+
+function isVideoCover(url) {
+  return /\.(mp4|webm|mov)($|\?)/i.test(url || '')
+}
 
 const drafts = ref([])
 const loading = ref(false)
@@ -78,5 +83,5 @@ onMounted(fetchDrafts)
 
 <style scoped>
 .page-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
-.table-cover { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; }
+.table-cover { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; display: block; }
 </style>

@@ -769,7 +769,24 @@ Mock.mock(/\/api\/stats\/\d+/, 'get', (options) => {
     })
   }
 
-  return { code: 0, data: { totalViews, totalLikes, totalCollects, totalComments, draftCount, dailyViews, worksCount: userWorks.length } }
+  // 分类分布
+  const categoryDist = CATEGORIES.map(cat => ({
+    name: cat.name,
+    value: userWorks.filter(w => w.categoryId === cat.id).length
+  })).filter(c => c.value > 0)
+
+  // 最新评论（该用户作品收到的评论）
+  const userWorkIds = userWorks.map(w => w.id)
+  const recentComments = COMMENTS
+    .filter(c => userWorkIds.includes(c.workId))
+    .sort((a, b) => b.createTime - a.createTime)
+    .slice(0, 5)
+    .map(c => {
+      const work = WORKS.find(w => w.id === c.workId)
+      return { ...c, workTitle: work ? work.title : '' }
+    })
+
+  return { code: 0, data: { totalViews, totalLikes, totalCollects, totalComments, draftCount, dailyViews, categoryDist, recentComments, worksCount: userWorks.length } }
 })
 
 console.log('[Mock] 数据已初始化：', WORKS.length, '个作品，', USERS.length, '个用户，', CATEGORIES.length, '个分类')
